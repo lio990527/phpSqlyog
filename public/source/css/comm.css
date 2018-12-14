@@ -4,6 +4,10 @@ body,table,ul,div,form,input{padding:0;margin:0;font-size:12px;}
 .wingbtn{font-family:Wingdings;}
 .full_area{width:100%;height:100%;margin:0;padding:20px;color:#666;font-family:Courier New;line-height:152%;word-wrap:break-word;border:0;resize: none;}
 
+.tab_list{margin:0;width:100%;list-style:none;word-wrap:break-word;white-space:nowrap;border-bottom:1px solid;font-size:0;}
+.tab_list li{margin:0;display:inline-block;position:relative;border:1px solid;border-bottom:0;padding:2px 5px;font-size:12px;cursor:pointer;}
+.tab_list li.checked{font-weight:bold;}
+
 .searchBtn{padding:3px 0;display:inline-block;width:100%;background-color:#D2D9E2;}
 .searchBtn table{margin-left:3px;border-spacing:0;}
 .searchBtn td{padding:2px;}

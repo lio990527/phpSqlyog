@@ -1,11 +1,14 @@
 <?php
 require_once 'core.php';
 $db = $_GET['db'];
-$connect = Tmysql::connect($db);
-$mysql_result = $connect->query("SHOW TABLES");
-$tables = array();
-while ($res = $mysql_result->fetch_array()){
-	$tables[] = array_pop($res);
+$conn = Tmysql::factory($db);
+
+$default = $conn->conf['default'];
+$dbs = array();
+if(empty($default)){
+	$dbs = $conn->show_dbs();
+}else{
+	$tables = $conn->show_tables();
 }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -48,7 +51,7 @@ while ($res = $mysql_result->fetch_array()){
 		}
 		var view = frame.contentDocument.getElementById('viewInfo');
 		var tbl = $(dom).text();
-		$.get("/index.php?param=/dot/dotResult&dbName=<%$dbName%>&info=true&table="+tbl,function(data){
+		$.get("/ajax.php?dbName=<%$dbName%>&table="+tbl,function(data){
 			$(view).html(data).show();
 		});
 		//input.value = 'SELECT * from '+$(dom).text()+' LIMIT 100;';
@@ -76,7 +79,7 @@ while ($res = $mysql_result->fetch_array()){
 						<?php foreach ($tables as $table):?>
 						<tr>
 							<td><span class="ico wingbtn">+</span></td>
-							<td><span class="table" ondblclick="showData(this)"><?php echo $table;?></span></td>
+							<td><span class="table" ondblclick="showData(this)"><?php echo $table['Tables_in_xyb_dev'];?></span></td>
 						</tr>
 						<?php endforeach;?>
 					</table>

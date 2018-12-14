@@ -23,5 +23,5 @@ if($flag){
 	Tini::writeIni(CONFPATH.'database.ini', $conn);
 }
 
-header("location:main.php");
+header("location:main.php?db={$post['name']}");
 ?>

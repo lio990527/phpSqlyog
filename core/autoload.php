@@ -15,7 +15,10 @@ function find_file($name, $path = ''){
 		while (($p = $obj->read()) !== false){
 			if($p === '.' || $p === '..') continue;
 			if(is_file(LIBPATH.$path.$p)) continue;
-			if(is_dir(LIBPATH.$path.$p)) return find_file($name, $path.$p.'/');
+			if(is_dir(LIBPATH.$path.$p)) {
+				$res = find_file($name, $path.$p.'/');
+				if(!empty($res)) return $res;
+			}
 		}
 	}else{
 		return '';
