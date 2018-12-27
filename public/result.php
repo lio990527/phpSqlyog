@@ -1,12 +1,13 @@
 <?php
-require_once 'core.php';
-$db = $_GET['db'];
-! empty($db) or die('not found db');
+require_once 'index.php';
+$name = $_GET['name'];
+// $default = $_GET['db'];
+! empty($name) or die('not found db');
+$results = array('count' => 0, 'success' => 0, 'fail' => 0);
+$searchs = array();
 if (! empty($_POST['sql'])) {
-	$conn = Tmysql::connect($db);
+	$conn = Tmysql::factory($name);
 	$sqls = array_filter(explode('__', $_POST['sql']));
-	$results = array('count' => 0, 'success' => 0, 'fail' => 0);
-	$searchs = array();
 	$index_search = 1;
 	foreach ($sqls as $sql){
 		if(preg_match('/^(update|delete|insert)/i', $sql)) {
@@ -35,7 +36,7 @@ if (! empty($_POST['sql'])) {
 				$page = empty($_REQUEST['page']) ? 1 : intval($_REQUEST['page']);
 				$page = empty($_REQUEST['prev']) ? $page : intval($_REQUEST['prev']);
 				$page = empty($_REQUEST['next']) ? $page : intval($_REQUEST['next']);
-				$size = empty($_REQUEST['limit']) ? 100 : intval($_REQUEST['limit']);
+				$size = empty($_REQUEST['limit']) ? 50 : intval($_REQUEST['limit']);
 				$sql_count = 'SELECT COUNT(1) as sum '.substr($sql, stripos($sql, ' from '));
 				$obj_count = $conn->query($sql_count);
 				if($obj_count !== false){
@@ -221,7 +222,7 @@ if (! empty($_POST['sql'])) {
 		</div> 
 		<?php foreach ($searchs as $k => $res):?>
 		<div class="showView" id="viewSearch_<?php echo $k?>" style="display:<?php if($k=='1')none;?>;">
-			<form name="result" action="result.php?db=<?php echo $db;?>" method="post">
+			<form name="result" action="result.php?name=<?php echo $name;?>" method="post">
 				<div class="searchBtn">
 					<input type="hidden" name="sql" value="<?php echo $res['sql'];?>"/>
 					<input type="hidden" name="sort" value="<?php echo (!empty($res['order']) && $res['sort'] == 'ASC') ? 'DESC' : 'ASC'?>"/>

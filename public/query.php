@@ -55,9 +55,10 @@
 	<div class="searchBtn" style="position:absolute;top:0;left:0;">
 		&nbsp;<button class="webbtn" onmousedown="event.preventDefault();" onclick="query()">4</button>
 	</div>
-	<form action="result.php?db=<?php echo $_GET['db']?>" method="post" target="result_<?php echo $_GET['db']?>">
+	<form name="query" action="result.php?name=<?php echo $_GET['name']?>&db=<?php echo $_GET['db']?>" method="post" target="result_<?php echo $_GET['name']?>">
 		<textarea class="full_area" style="padding-top:25px;" id="input" spellcheck="false" onkeydown="checkKeys(this, event)" onkeyup="checkKeyword(this)"></textarea>
-		<input type="hidden" name="sql"/>
+		<input type="hidden" name="sql" />
+		<input type="hidden" name="db" value="<?php echo $_GET['db']?>" />
 	</form>
 </body>
 </html>

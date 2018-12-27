@@ -1,12 +1,12 @@
 <?php
-require_once 'core.php';
-$db = $_GET['db'];
-$conn = Tmysql::factory($db);
-
-$default = $conn->conf['default'];
-$dbs = array();
+require_once 'index.php';
+$name = $_GET['name'];
+$default = $_GET['db'];
+$conn = Tmysql::factory($name);
+$databases = array();
+$tables = array();
 if(empty($default)){
-	$dbs = $conn->show_dbs();
+	$databases = $conn->show_dbs();
 }else{
 	$tables = $conn->show_tables();
 }
@@ -16,32 +16,36 @@ if(empty($default)){
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link type="text/css" rel="stylesheet" href="source/css/comm.css"/>
+<script type="text/javascript" src="source/js/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="source/js/comm.js"></script>
 <script type="text/javascript">
-// 	$(function(){
-// 		$('.dbList').find('a').on('mousedown', function(){
-// 			var db = $(this);
-// 			db.next('a').click();
-// 			var tables = $(this).parent().find('div.tableList');
-// 			if(tables.css('display') != 'none'){
-// 				tables.hide();
-// 				return false;
-// 			}
-// 			$('div.tableList').hide();
-// 			$.ajax({
-// 			type : 'get',
-// 				async: false,
-// 				url : '/index.php?param=/dot/dotDb',
-// 				data: 'type=tables&dbName='+this.title,
-// 				dataType : 'html',
-// 				success : function(info){
-// 					tables.show().find('form').html(info);
-// 				},
-// 				error:function(){
-// 					;
-// 				}
-// 			});
-// 		});
-// 	});
+	$(function(){
+		$('.dbList').find('a').on('mousedown', function(){
+			var db = $(this);
+			var tables = $(this).parent().find('div.tableList');
+			if(tables.css('display') != 'none'){
+				tables.hide();
+				return false;
+			}
+			$('div.tableList').hide();
+			$.ajax({
+				type : 'get',
+				async: false,
+				url : 'index.php?ctrl=ajax/tables',
+				data: {name:'<?php echo $name?>', db:$(db).text()},
+				dataType : 'html',
+				success : function(info){
+					tables.show().html(info);
+				},
+				error:function(){
+					;
+				}
+			});
+
+			var dom = getFrameDom('query_<?php echo $name?>');
+			dom.forms['query'].db.value = $(db).text();
+		});
+	});
 
 	function showData(dom){
 		//var input = $(dom).parentsUntil('form').parent().find('input[type="hidden"]')[0];
@@ -66,20 +70,23 @@ if(empty($default)){
 	.tableList span.table{cursor:pointer;}
 	.tableList table td{padding:2px;}
 	.ico{width:12px;height:12px;display:inline-block;cursor:pointer;}
+	.dbList{margin-left:-10px;list-style-type:none;font-size:14px;}
+	.dbList li a{color:#333;}
 </style>
 </head>
 <body>
-	<ul class="dbList" style="margin-left:-10px;list-style-type:none;font-size:12px;">
+	<ul class="dbList" style="">
+		<?php if(!empty($tables)):?>
 		<li>
 			<span class="ico wingbtn">:</span>
-			<a title="<?php echo $db?>"><?php echo $db?></a>
-			<div class="tableList" style="display:;">
-				<form action="result.php?db=<?php echo $db?>" method="post" target="result_<?php echo $db?>">
+			<a title="<?php echo $default?>"><?php echo $default?></a>
+			<div class="tableList">
+				<form action="result.php?db=<?php echo $default?>" method="post" target="result_<?php echo $default?>">
 					<table border="0" cellpadding="0" cellspacing="0" style="margin-left:15px;">
 						<?php foreach ($tables as $table):?>
 						<tr>
 							<td><span class="ico wingbtn">+</span></td>
-							<td><span class="table" ondblclick="showData(this)"><?php echo $table['Tables_in_xyb_dev'];?></span></td>
+							<td><span class="table" ondblclick="showData(this)"><?php echo array_pop($table);?></span></td>
 						</tr>
 						<?php endforeach;?>
 					</table>
@@ -87,6 +94,14 @@ if(empty($default)){
 				</form>
 			</div>
 		</li>
+		<?php endif;?>
+		<?php foreach ($databases as $db):?>
+		<li>
+			<span class="ico wingbtn">:</span>
+			<a href="javascript:void(0)" title="<?php echo $db['Database']?>"><?php echo $db['Database']?></a>
+			<div class="tableList" style="display:none;"></div>
+		</li>
+		<?php endforeach;?>
 	</ul>
 </body>
 </html>

@@ -1,7 +1,7 @@
 <?php 
 class Tmysql{
 	
-	private static $self = null;
+	private static $self = array();
 	
 	/**
 	 * 
@@ -17,18 +17,21 @@ class Tmysql{
 	
 	private function __construct($name){
 		$this->conf = self::get_db_conf($name);
-		$this->conn = new mysqli($this->conf['host'], $this->conf['user'], $this->conf['pass'], $this->conf['default'], $this->conf['port']);
+		$database = new Database();
+		$this->conn = $database->connect($this->conf['host'], intval($this->conf['port']), $this->conf['user'], $this->conf['pass'], $this->conf['default']);
 	}
-	
+
 	/**
+	 *
 	 * @param string $name
 	 * @return Tmysql
 	 */
-	public static function factory($name){
-		if(empty(self::$self)){
-			self::$self = new Tmysql($name);
+	public static function factory($name)
+	{
+		if (! array_key_exists($name, self::$self)) {
+			self::$self[$name] = new Tmysql($name);
 		}
-		return self::$self;
+		return self::$self[$name];
 	}
 	
 	public function show_dbs(){
@@ -89,8 +92,8 @@ class Tmysql{
 	}
 	
 	private static function get_db_conf($name){
-		$dbs = Tini::readIni(CONFPATH.'database.ini');
-		array_key_exists($name, $dbs) OR die('wrong database name');
-		return $dbs[$name];
+		$tmp = 'tmp_' . md5($name) . '.ini';
+		$dbs = Tini::readIni(CONFPATH . $tmp);
+		return $dbs;
 	}
 }

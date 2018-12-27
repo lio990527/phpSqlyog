@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh_CN">
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="source/css/comm.css"/>
+	<link rel="stylesheet" type="text/css" href="source/css/form.css"/>
+	<style type="text/css">
+	</style>
+	<script type="text/javascript" src="source/js/jquery-1.10.2.min.js"></script>
+	<script type="text/javascript">
+		
+		$(function(){
+			loadConfig();
+			
+			$('#connect_new').on('click', function(){
+				var newname = prompt('请输入一个新的连接名称', 'new_connect');
+				if(newname === null || newname === ''){
+					return false;
+				}
+				$.ajax({
+					url:'index.php?ctrl=sqlyog/new/'+newname,
+					dataType:'json',
+					success:function(res){
+						if(res.code == '1'){
+							loadConfig();
+						}
+					}
+				});
+			});
+			
+			$('#connect_copy').on('click', function(){
+				var name = $('#select_db').val();
+				if(name === null || name === ''){
+					return false;
+				}
+				$.ajax({
+					url:'index.php?ctrl=sqlyog/copy/'+name,
+					dataType:'json',
+					success:function(res){
+						if(res.code == '1'){
+							loadConfig();
+						}
+					}
+				});
+			});
+			
+			$('#connect_save').on('click', function(){
+				var name = $('#select_db').val();
+				if(name === null || name === ''){
+					return false;
+				}
+				var request = formValue('connect');
+				$.ajax({
+					url:'index.php?ctrl=sqlyog/save/'+name,
+					dataType:'json',
+					type:'post',
+					data:request,
+					success:function(res){
+						alert(res.message);
+					}
+				});
+			});
+			
+			$('#connect_rename').on('click', function(){
+				var name = $('#select_db').val();
+				var newname = prompt('请输入一个新的连接名称', name);
+				if(newname === null || newname === '' || newname === name){
+					return false;
+				}
+				$.ajax({
+					url:'index.php?ctrl=sqlyog/rename/'+name,
+					data:{'newname':newname},
+					dataType:'json',
+					success:function(res){
+						console.log(res);
+						if(res.code == '1'){
+							loadConfig();
+						}
+					}
+				});
+			});
+			
+			$('#connect_del').on('click', function(){
+				var name = $('#select_db').val();
+				if(!confirm('确认删除此连接???') || name === null || name === ''){
+					return false;
+				}
+				$.ajax({
+					url:'index.php?ctrl=sqlyog/del/'+name,
+					dataType:'json',
+					success:function(res){
+						if(res.code == '1'){
+							loadConfig();
+						}
+					}
+				});
+			});
+			
+			$('#select_db').on('change', function(){
+				var config = document.config[this.value];
+				formFill('connect', config);
+			}); 
+
+			$('#connect_jump').on('click', function(){
+				var res = connect();
+				console.log(res);
+				if(res.code == '0'){
+					alert(res.message);
+				}else{
+					document.connect.submit();
+				}
+			});
+			
+			$('#connect_test').on('click', function(){
+				var res = connect();
+				alert(res.message);
+			})
+		})
+		
+		function loadConfig(){
+			$.ajax({
+				url:'index.php?ctrl=sqlyog/configs',
+				type:'get',
+				dataType:'json',
+				success:function(res){
+					document.config = res.data['config'];
+					$('#select_db').html('');
+					for(var name in document.config){
+						var config = document.config[name];
+						var option = document.createElement('option');
+						option.value = name;
+						option.innerHTML = name;
+						if(name === res.data['default']){
+							option.selected = 'true';
+							formFill('connect', config);
+						}
+						$('#select_db').append(option);
+					}
+				}
+			});
+		}
+		
+		function connect(){
+			var response = {}
+			var request = formValue('connect');
+			var name = $('#select_db').val();
+			$.ajax({
+				url:'index.php?ctrl=ajax/connect/'+name,
+				type:'post',
+				async:false,
+ 				dataType:'json', 
+				data:request, 
+				success:function(res){
+					response = res;
+				}
+			});
+			return response;
+		}
+	
+		function formValue(formName){
+			var elements = document.forms[formName].elements;
+			var request = {};
+			for(var index = 0; index < elements.length; index++){
+				var elename = elements[index].name;
+				if(elements[index].name != ''){
+					request[elename] = elements[index].value;
+				}
+			}
+			return request;
+		}
+		
+		function formFill(formName, data){
+			var form = document.forms[formName];
+			for(var name in data){
+				if(undefined != form[name]){
+					form[name].value = data[name];
+				}
+			}
+		}
+
+	</script>
+</head>
+<body>
+	<div id="main_background">
+		<div id="main_connect">
+			<div class="title">连接到我的SQL主机</div>
+			<div class="body">
+				<div class="content">
+					<div class="logo">
+						<img alt="mysql" src="source/img/mysql.png">
+					</div>
+					<div class="connect">
+						<div class="btns">
+							<button id="connect_new">新建</button>&nbsp;
+							<button id="connect_copy">克隆</button>&nbsp;
+							<button id="connect_save">保存</button>&nbsp;
+							<button id="connect_rename">重命名</button>&nbsp;
+							<button id="connect_del">删除</button>
+						</div>
+						<div class="dbs">
+							<label for="select_db">保/存的连接</label>
+							<div><select id="select_db"></select></div>
+						</div>
+						<div class="options">
+							<ul class="tab_list">
+								<li class="checked">MySQL</li>
+								<li>HTTP</li>
+								<li>SSH</li>
+								<li>SSL</li>
+								<li>高级功能</li>
+							</ul>
+						</div>
+						<div class="forms">
+							<form name="connect" action="index.php?ctrl=connect" method="post">
+								<table>
+									<tr>
+										<td><label>我的SQl主机地址</label></td>
+										<td><input type="text" name="host" value=""/></td>
+									</tr>
+									<tr>
+										<td><label>用户名</label></td>
+										<td><input type="text" name="user" value=""/></td>
+									</tr>
+									<tr>
+										<td><label>密码</label></td>
+										<td>
+											<input type="password" name="pass" value="" class="pass"/>
+											<input type="checkbox" name="save_pass" id="save_pass"/>
+											<label for="save_pass">保存密码</label>
+										</td>
+									</tr>
+									<tr>
+										<td><label>端口</label></td>
+										<td><input name="port" value="" class="pass"/></td>
+									</tr>
+									<tr>
+										<td><label>数据库</label></td>
+										<td><input type="text" name="default" value=""/></td>
+									</tr>
+									<tr>
+										<td colspan="2">&nbsp;(使用来分割多个数据库.留下空白以显示全部) </td>
+									</tr>
+									<tr>
+										<td colspan="2">
+											<input type="checkbox" name="use_zip" id="use_zip"/>
+											<label for="use_zip">使用压缩协议</label>
+										</td>
+									</tr>
+									<tr>
+										<td colspan="2">
+											<fieldset style="float:left;display:inline-block;">
+												<legend>会话空闲超时</legend>
+												<input type="radio" name="time_out" id="time_default" value="default" checked/>
+												<label for="time_default">默认</label>
+												<input type="radio" name="time_out" id="time_input" value="input">
+												<input class="second" name="time_out_sec" id="time_out_sec" onfocus="document.getElementById('time_input').click()"/>
+												<label for="time_out_sec">（秒）</label>
+											</fieldset>
+											<fieldset>
+												<legend>保持活动的间隔</legend>
+												<input class="second" name="keep_alive_sec" id="keep_alive_sec"/>
+												<label for="keep_alive_sec">（秒）</label>
+											</fieldset>
+										</td>
+									</tr>
+								</table>
+							</form>
+						</div>
+					</div>
+				</div>
+				<div class="footer">
+					<button id="connect_jump">连接(C)</button>
+					<button>取消(L)</button>
+					<button id="connect_test">测试链接</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

@@ -29,7 +29,7 @@ class Tini
 			mkdir(dirname($file), 0700) or die('path create error');
 		}
 
-		$file = fopen($file, 'a');
+		$file = fopen($file, 'w');
 		fwrite($file, $ini) or die('file save error');
 		return true;
 	}
