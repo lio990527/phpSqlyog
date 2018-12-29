@@ -21,7 +21,7 @@
 					url:'index.php?ctrl=sqlyog/new/'+newname,
 					dataType:'json',
 					success:function(res){
-						if(res.code == '1'){
+						if(res.status == '1'){
 							loadConfig();
 						}
 					}
@@ -37,7 +37,7 @@
 					url:'index.php?ctrl=sqlyog/copy/'+name,
 					dataType:'json',
 					success:function(res){
-						if(res.code == '1'){
+						if(res.status == '1'){
 							loadConfig();
 						}
 					}
@@ -73,7 +73,7 @@
 					dataType:'json',
 					success:function(res){
 						console.log(res);
-						if(res.code == '1'){
+						if(res.status == '1'){
 							loadConfig();
 						}
 					}
@@ -89,7 +89,7 @@
 					url:'index.php?ctrl=sqlyog/del/'+name,
 					dataType:'json',
 					success:function(res){
-						if(res.code == '1'){
+						if(res.status == '1'){
 							loadConfig();
 						}
 					}
@@ -98,22 +98,47 @@
 			
 			$('#select_db').on('change', function(){
 				var config = document.config[this.value];
+				document.connect.name.value = this.value;
 				formFill('connect', config);
 			}); 
 
 			$('#connect_jump').on('click', function(){
-				var res = connect();
-				console.log(res);
-				if(res.code == '0'){
-					alert(res.message);
-				}else{
-					document.connect.submit();
-				}
+				var request = formValue('connect');
+				$.ajax({
+					url:'index.php?ctrl=connect/test',
+					type:'post',
+					async:false,
+	 				dataType:'json', 
+					data:request, 
+					success:function(res){
+						if(res.status != 1){
+							alert(res.message);return false;
+						}else{
+							if(res.data == 'Y' && confirm('连接已变更,是否保存???')){
+								var change = document.createElement('input');
+								change.name = 'change';
+								change.type = 'hidden';
+								change.value = '1';
+								document.connect.appendChild(change);
+							}
+							document.connect.submit();
+						}
+					}
+				});
 			});
 			
 			$('#connect_test').on('click', function(){
-				var res = connect();
-				alert(res.message);
+				var request = formValue('connect');
+				$.ajax({
+					url:'index.php?ctrl=connect/test',
+					type:'post',
+					async:false,
+	 				dataType:'json', 
+					data:request, 
+					success:function(res){
+						alert(res.message);
+					}
+				});
 			})
 		})
 		
@@ -125,6 +150,7 @@
 				success:function(res){
 					document.config = res.data['config'];
 					$('#select_db').html('');
+					document.connect.name.value = res.data['default'];
 					for(var name in document.config){
 						var config = document.config[name];
 						var option = document.createElement('option');
@@ -139,31 +165,32 @@
 				}
 			});
 		}
-		
-		function connect(){
-			var response = {}
-			var request = formValue('connect');
-			var name = $('#select_db').val();
-			$.ajax({
-				url:'index.php?ctrl=ajax/connect/'+name,
-				type:'post',
-				async:false,
- 				dataType:'json', 
-				data:request, 
-				success:function(res){
-					response = res;
-				}
-			});
-			return response;
-		}
 	
 		function formValue(formName){
-			var elements = document.forms[formName].elements;
+			var formDoms = document.forms[formName];
 			var request = {};
-			for(var index = 0; index < elements.length; index++){
-				var elename = elements[index].name;
-				if(elements[index].name != ''){
-					request[elename] = elements[index].value;
+			for(var index = 0; index < formDoms.elements.length; index++){
+				var element = formDoms.elements[index];
+				if(element.name == '') continue;
+				switch(element.type){
+					case 'radio':
+						request[element.name] = formDoms[element.name].value;
+						break;
+					case 'checkbox':
+						if(formDoms[element.name].length > 0){
+							if(request[element.name] == undefined) request[element.name] = [];
+							if(element.checked){
+								request[element.name].push(element.value);
+							}
+						}else{
+							if(element.checked){
+								request[element.name] = element.value;
+							}
+						}
+						break;
+					default:
+						request[element.name] = element.value;
+						break;
 				}
 			}
 			return request;
@@ -210,8 +237,9 @@
 								<li>高级功能</li>
 							</ul>
 						</div>
-						<div class="forms">
-							<form name="connect" action="index.php?ctrl=connect" method="post">
+						<form name="connect" action="index.php?ctrl=connect/index" method="post">
+							<input type="hidden" name="name"/>
+							<div class="forms">
 								<table>
 									<tr>
 										<td><label>我的SQl主机地址</label></td>
@@ -242,7 +270,7 @@
 									</tr>
 									<tr>
 										<td colspan="2">
-											<input type="checkbox" name="use_zip" id="use_zip"/>
+											<input type="checkbox" name="use_zip" id="use_zip" value="Y"/>
 											<label for="use_zip">使用压缩协议</label>
 										</td>
 									</tr>
@@ -264,8 +292,8 @@
 										</td>
 									</tr>
 								</table>
-							</form>
-						</div>
+							</div>
+						</form>
 					</div>
 				</div>
 				<div class="footer">

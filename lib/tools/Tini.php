@@ -5,9 +5,8 @@ class Tini
 
 	public static function readIni($file, $type = true)
 	{
-		if (! is_file($file))
-			return array();
-		return parse_ini_file($file, $type);
+		if (! is_file(CINIPATH.$file)) return array();
+		return parse_ini_file(CINIPATH. $file, $type);
 	}
 
 	public static function writeIni($file, $content = array())
@@ -25,11 +24,11 @@ class Tini
 			$ini .= PHP_EOL;
 		}
 
-		if (! is_dir(dirname($file))) {
-			mkdir(dirname($file), 0700) or die('path create error');
+		if (! is_dir(dirname(CINIPATH . $file))) {
+			mkdir(dirname(CINIPATH . $file), 0700) or die('path create error');
 		}
 
-		$file = fopen($file, 'w');
+		$file = fopen(CINIPATH . $file, 'w');
 		fwrite($file, $ini) or die('file save error');
 		return true;
 	}

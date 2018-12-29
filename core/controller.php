@@ -1,5 +1,4 @@
 <?php
-require_once COREPATH . 'output.php';
 abstract class Controller {
 	
 	/**
@@ -23,19 +22,12 @@ abstract class Controller {
 	
 	/**
 	 * 
-	 * @param int $code
+	 * @param int $status
 	 * @param mixed $data
 	 * @param string $msg
 	 */
-	protected function print_json($code, $data, $msg = ''){
-		$response = [
-			'code' => $code,
-			'data' => $data,
-			'message' => $msg,
-		];
-		
-		echo json_encode($response);
-		exit;
+	protected function print_json($status, $data, $msg = ''){
+		$this->output->print_json($status, $msg, $data);
 	}
 	
 }

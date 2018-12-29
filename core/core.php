@@ -3,7 +3,8 @@
 define('COREPATH', APPPATH . 'core/');
 define('CTRLPATH', APPPATH . 'ctrl/');
 define('LIBPATH', APPPATH . 'lib/');
-define('CONFPATH', LIBPATH . 'conf/');
+define('CONFPATH', LIBPATH . 'config/');
+define('CINIPATH', LIBPATH . 'config/ini/');
 define('VIEWPATH', APPPATH . 'view/');
 
 require_once COREPATH . 'autoload.php';

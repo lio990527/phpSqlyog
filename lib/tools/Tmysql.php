@@ -92,8 +92,8 @@ class Tmysql{
 	}
 	
 	private static function get_db_conf($name){
-		$tmp = 'tmp_' . md5($name) . '.ini';
-		$dbs = Tini::readIni(CONFPATH . $tmp);
+		$tmp = 'tmp_' . $name . '.ini';
+		$dbs = Tini::readIni($tmp);
 		return $dbs;
 	}
 }

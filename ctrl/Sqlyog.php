@@ -2,7 +2,7 @@
 
 class Sqlyog extends Controller{
 	
-	private $config = CONFPATH . 'database.ini';
+	private $config = 'database.ini';
 
 	public function configs(){
 		$configs = Tini::readIni($this->config);
@@ -11,6 +11,10 @@ class Sqlyog extends Controller{
 		$this->print_json('1', ['default' => $default, 'config' => $configs]);
 	}
 	
+	/**
+	 * 新增
+	 * @param string $name
+	 */
 	public function new($name){
 		$configs = Tini::readIni($this->config);
 		$newname = $this->unq_name($name, $configs);
@@ -27,6 +31,10 @@ class Sqlyog extends Controller{
 		$this->print_json('1', $res, 'create success');
 	}
 	
+	/**
+	 * 复制
+	 * @param string $name
+	 */
 	public function copy($name){
 		$configs = Tini::readIni($this->config);
 		if (! array_key_exists($name, $configs)) {
@@ -39,7 +47,11 @@ class Sqlyog extends Controller{
 		$res = Tini::writeIni($this->config, $configs);
 		$this->print_json('1', $res, 'copy success');
 	}
-
+	
+	/**
+	 * 保存
+	 * @param string $name
+	 */
 	public function save($name){
 		$configs = Tini::readIni($this->config);
 		
@@ -50,6 +62,10 @@ class Sqlyog extends Controller{
 		$this->print_json('1', $res, 'save success');
 	}
 	
+	/**
+	 * 重命名
+	 * @param string $name
+	 */
 	public function rename($name){
 		$configs = Tini::readIni($this->config);
 		if (! array_key_exists($name, $configs)) {
@@ -77,14 +93,6 @@ class Sqlyog extends Controller{
 		unset($configs[$name]);
 		$res = Tini::writeIni($this->config, $configs);
 		$this->print_json('1', $res, 'delete success');
-	}
-	
-	public function tables(){
-		$conn = Tmysql::factory($this->request->get('name'));
-		$conn->select_db($this->request->get('db'));
-		$tables = $conn->show_tables();
-		
-		$this->output->data('tables', $tables);
 	}
 	
 	private function unq_name($name, $list){
