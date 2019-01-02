@@ -2,7 +2,7 @@
 <?php foreach ($tables as $table) :?>
 	<tr>
 		<td><span class="ico wingbtn">+</span></td>
-		<td><span class="table" ondblclick="showData(this)"><?php echo array_pop($table)?></span></td>
+		<td><span class="table" onclick="showData(this)"><?php echo array_pop($table)?></span></td>
 	</tr>
 <?php endforeach;?>
 </table>

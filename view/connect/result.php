@@ -87,7 +87,7 @@
 			$(this).hide();
 		});
 
-		$('p.flex').on('click', function(){
+		$('.showView').on('click', 'p.flex', function(){
 			$('p.flex').not(this).find('button').text('5').hide();
 			var sort = $(this).find('button');
 			if(sort.css('display') == 'none'){
@@ -97,6 +97,43 @@
 			sort[0].click();
 		})
 	})
+	
+	function dataQuery(form){
+		//console.log(name);
+		var data = formValue(form.name);
+		console.log($(form));
+		return false;
+	}
+
+	function formValue(formName){
+		var formDoms = document.forms[formName];
+		var request = {};
+		for(var index = 0; index < formDoms.elements.length; index++){
+			var element = formDoms.elements[index];
+			if(element.name == '') continue;
+			switch(element.type){
+				case 'radio':
+					request[element.name] = formDoms[element.name].value;
+					break;
+				case 'checkbox':
+					if(formDoms[element.name].length > 0){
+						if(request[element.name] == undefined) request[element.name] = [];
+						if(element.checked){
+							request[element.name].push(element.value);
+						}
+					}else{
+						if(element.checked){
+							request[element.name] = element.value;
+						}
+					}
+					break;
+				default:
+					request[element.name] = element.value;
+					break;
+			}
+		}
+		return request;
+	}
 </script>
 <title>sqlyog_result</title>
 </head>
@@ -106,11 +143,11 @@
 			<ul class="tabList">
 				<?php foreach ($searchs as $index => $res):?><li title="Search_<?php echo $index?>"<?php if ($index=='1'):?> class="menuCheck"<?php endif;?>><span><a class="wingbtn">3</a> 查询结果_<?php echo $index?></span></li><?php endforeach;?>
 				<?php if ($results['count'] > 0):?><li title="Result"<?php if (count($searchs) < 1 && $results['count'] > 0):?> class="menuCheck"<?php endif;?>><span><a class="wingbtn">+</a> 执行结果</span></li><?php endif;?>
-				<li title="table"><span><a class="wingbtn">4</a> 表数据</span></li>
+				<li title="Table"><span><a class="wingbtn">4</a> 表数据</span></li>
 				<li title="Info"><span><a class="wingbtn">2</a> 信息</span></li>
 			</ul>
 		</div>
-		<div class="showView" style="display:none;">
+		<div class="showView" id="viewTable" style="display:none;">
 			<div class="scollView" style="bottom:25px;">
 				~~~~~~~~~~~~~~~~~~~~~~<br/>
 				~~~~~~~~~~~~~~~~~~~~~~<br/>
@@ -132,9 +169,9 @@
 					<input type="hidden" name="sort" value="<?php echo (!empty($res['order']) && $res['sort'] == 'ASC') ? 'DESC' : 'ASC'?>"/>
 					<table cellpadding="0" cellspacing="0" border="0" width="100%">
 						<tr>
-							<td width="16">
+							<td>
 								<div class="selectView">
-									<button type="button" class="import wingbtn" title="导出为...">=</button>
+									<button class="import wingbtn" title="导出为...">=</button>
 									<select name="export" size="3" style="display:none;">
 										<option value="1">SQL</option>
 										<option value="2">CSV</option>
@@ -143,7 +180,7 @@
 									</select>
 								</div>
 							</td>
-							<td width="16"><button name="export" value="1" class="wingbtn" title="导出为SQL">&lt;</button></td>
+							<td><button name="export" value="1" class="wingbtn" title="导出为SQL">&lt;</button></td>
 							<td width="99%"></td>
 							<?php if(!empty($res['page'])):?>
 							<td>页:</td>
@@ -202,28 +239,7 @@
 			<?php endforeach;?>
 		</div>
 		<?php endif;?>
-		<div class="showView scollView" id="viewInfo" style="display:none;">
-			<table class="infoTable" cellpadding="0" cellspacing="1" border="0" width="100%">
-				<tr>
-					<th>TABLE_NAME</th>
-					<th>TABLE_COMMENT</th>
-					<th>ENGINE</th>
-					<th>TABLE_COLLATION</th>
-					<th>DATA_LENGTH</th>
-					<th>INDEX_LENGTH</th>
-				</tr>
-				<?php foreach ($infos as $info):?>
-				<tr>
-					<td><?php echo $info['TABLE_COLLATION']?></td>
-					<td><?php echo $info['TABLE_NAME']?></td>
-					<td><?php echo $info['TABLE_COMMENT']?></td>
-					<td><?php echo $info['ENGINE']?></td>
-					<td><?php echo $info['DATA_LENGTH']?></td>
-					<td><?php echo $info['INDEX_LENGTH']?></td>
-				</tr>
-				<?php endforeach;?>
-			</table>
-		</div>
+		<div class="showView scollView" id="viewInfo" style="display:none;"></div>
  	</div>
 </body>
 </html>

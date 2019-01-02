@@ -34,12 +34,19 @@ class Tmysql{
 		return self::$self[$name];
 	}
 	
+	public function show_info($db){
+		$result = $this->conn->query("SELECT * from information_schema.tables where table_schema='{$db}'");
+		return $this->result_list($result);
+	}
+	
+	public function show_cols($table){
+		$result = $this->conn->query("SHOW FULL COLUMNS FROM {$table}");
+		return $this->result_list($result);
+	}
+	
 	public function show_dbs(){
 		$result = $this->conn->query("SHOW databases");
 		return $this->result_list($result);
-// 		$result = $conn->query("SHOW FULL COLUMNS FROM {$table}");
-// 		$result = $conn->query("SHOW FULL COLUMNS FROM {$table}");
-// 		$result = $conn->query("SELECT * from information_schema.tables where table_schema='{$db}'");
 	}
 	
 	public function show_tables(){

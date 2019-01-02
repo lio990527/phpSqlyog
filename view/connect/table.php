@@ -6,6 +6,7 @@
 <script type="text/javascript" src="source/js/jquery-1.10.2.min.js"></script>
 <script type="text/javascript" src="source/js/comm.js"></script>
 <script type="text/javascript">
+	var name = '<?php echo $name?>';
 	$(function(){
 		$('.dbList').find('a').on('mousedown', function(){
 			var db = $(this);
@@ -17,37 +18,62 @@
 			$('div.tableList').hide();
 			$.ajax({
 				type : 'get',
-				async: false,
+				async: true,
 				url : 'index.php?ctrl=connect/table',
-				data: {name:'<?php echo $name?>', db:$(db).text()},
+				data: {name:name, db:$(db).text()},
 				dataType : 'html',
 				success : function(info){
 					tables.show().html(info);
+					showInfo(name, $(db).text());
 				},
 				error:function(){
 					;
 				}
 			});
-
-			var dom = getFrameDom('query_<?php echo $name?>');
-			dom.forms['query'].db.value = $(db).text();
+			
+			var query = getFrameDom('query_'+name);
+			query.forms['query'].db.value = $(db).text();
 		});
 	});
 
 	function showData(dom){
-		//var input = $(dom).parentsUntil('form').parent().find('input[type="hidden"]')[0];
-		var frame = window.parent.document.getElementsByName('<%$dbName%>_result')[0];
-		if(frame == undefined){
-			return false;
-		}
-		var view = frame.contentDocument.getElementById('viewInfo');
-		var tbl = $(dom).text();
-		$.get("/ajax.php?dbName=<%$dbName%>&table="+tbl,function(data){
-			$(view).html(data).show();
+		var result = getFrameDom('result_'+name);
+		var db = $(dom).parents('li').find('a').text();
+		var table = $(dom).text();
+		$.ajax({
+			type : 'get',
+			async: false,
+			url : 'index.php?ctrl=connect/data',
+			data: {name:name, db:db, table:table},
+			dataType : 'html',
+			success : function(info){
+				$(result).find('#viewTable').html(info);
+				showInfo(name, db, table);
+				if($(result).find('#viewTable').css('display') == 'none' && $(result).find('#viewInfo').css('display') == 'none'){
+					$(result).find('li[title=Table]').trigger('click');
+				}
+			},
+			error:function(){
+				;
+			}
 		});
-		//input.value = 'SELECT * from '+$(dom).text()+' LIMIT 100;';
-		//console.log($(window.parent));
-		//input.form.submit();
+	}
+
+	function showInfo(name, db, table){
+		var result = getFrameDom('result_'+name);
+		$.ajax({
+			type : 'get',
+			async: false,
+			url : 'index.php?ctrl=connect/info',
+			data: {name:name, db:db, table:table},
+			dataType : 'html',
+			success : function(info){
+				$(result).find('#viewInfo').html(info);
+			},
+			error:function(){
+				;
+			}
+		});
 	}
 
 </script>

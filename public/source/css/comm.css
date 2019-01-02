@@ -9,7 +9,7 @@ a{text-decoration:none;}
 .tab_list li{margin:0;display:inline-block;position:relative;border:1px solid;border-bottom:0;padding:2px 5px;font-size:12px;cursor:pointer;}
 .tab_list li.checked{font-weight:bold;}
 
-.searchBtn{padding:3px 0;display:inline-block;width:100%;background-color:#D2D9E2;}
+.searchBtn{padding:2px 0;display:inline-block;width:100%;background-color:#D2D9E2;}
 .searchBtn table{margin-left:3px;border-spacing:0;}
 .searchBtn td{padding:2px;}
 .searchBtn button{height:16px;width:16px;border:0;font-size:15px;padding:0;background-color:transparent;font-weight:bold;cursor:pointer;}

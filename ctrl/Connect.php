@@ -18,7 +18,6 @@ class Connect extends Controller{
 			$name = md5($name);
 			$temp = 'tmp_' . $name . '.ini';
 			Tini::writeIni($temp , $conf);
-			
 		}
 		
 		$this->output->data('name', $name);
@@ -67,6 +66,88 @@ class Connect extends Controller{
 		$this->output->data('dbs', $dbs);
 	}
 	
+	public function info(){
+		$name = $this->request->get('name');
+		$db = $this->request->get('db');
+		if (! empty($name) && !empty($db)) {
+			$conn = Tmysql::factory($name);
+			if(empty($this->request->get('table'))){
+				$info = $conn->show_info($db);
+				$this->output->data('infos', $info);
+			}else{
+				$conn->select_db($db);
+				$info = $conn->show_cols($this->request->get('table'));
+				$this->output->data('columns', $info);
+			}
+		}
+		
+		$this->output->view('info');
+		$this->output->print(true);
+	}
+	
+	public function data(){
+		$name = $this->request->get('name');
+		$db = $this->request->get('db');
+		$table = $this->request->get('table');
+		$result = array('data' => []);
+		if (! empty($name) && ! empty($table)) {
+			$sql = "SELECT * FROM {$table}";
+			$conn = Tmysql::factory($name);
+			empty($db) OR $conn->select_db($db);
+
+			$result['order'] = $this->request->post('order', '');
+			$result['sort']  = $this->request->post('sort', 'ASC');
+			if(!empty($result['order'])){
+				$sql .= " ORDER BY {$result['order']} {$result['sort']}";
+			}
+			if (empty($this->request->post('export'))) {
+				$page = $this->request->post('page', 1);
+				$size = $this->request->post('limit', 50);
+				$sql_count = 'SELECT COUNT(1) as sum ' . substr($sql, stripos($sql, ' from '));
+				$obj_count = $conn->query($sql_count);
+				if ($obj_count !== false) {
+					$res_count = $obj_count->fetch_array();
+					$start = ($page - 1) * $size;
+					$sql .= " LIMIT {$start},{$size}";
+					
+					$result['page']['num'] = $page;
+					$result['page']['prev'] = $page - 1;
+					$result['page']['next'] = $page + 1;
+					$result['page']['size'] = $size;
+					$result['page']['max'] = ceil(intval($res_count['sum']) / $size);
+				}
+			}
+			
+			$result['data']['cols'] = $conn->show_cols($table);
+			
+			$res_object = $conn->query($sql);
+			$result['data']['rows'] = $conn->result_list($res_object);
+			if(!empty($this->request->post('export'))){
+				$tbl_name = '';
+				preg_match('/from\s*`?(\w+)`?/i', $sql, $tbl_name);
+				$tbl_name = isset($tbl_name[1]) ? $tbl_name[1] : 'anytable';
+				switch ($this->request->post('export')){
+					case 1:
+						Texport::sql($result['data']['rows'], $tbl_name);
+						break;
+					case 2:
+						Texport::csv($result['data']['rows'], $tbl_name);
+						break;
+					case 3:
+						Texport::json($result['data']['rows'], $tbl_name);
+						break;
+				}
+			}
+		}
+
+		$this->output->data('name', $name);
+		$this->output->data('db', $db);
+		$this->output->data('table', $table);
+		$this->output->data('result', $result);
+		$this->output->view('data');
+		$this->output->print(true);
+	}
+	
 	public function query(){
 		$this->output->data('name', $this->request->get('name'));
 	}
@@ -75,8 +156,12 @@ class Connect extends Controller{
 		$name = $this->request->get('name');
 		$results = array('count' => 0, 'success' => 0, 'fail' => 0);
 		$searchs = array();
+		$conn = Tmysql::factory($name);
+		if(!empty($conn->conf['default'])){
+			$infos = $conn->show_info($conn->conf['default']);
+			$this->output->data('infos', $infos);
+		}
 		if (! empty($this->request->post('sql')) && ! empty($name)) {
-			$conn = Tmysql::factory($name);
 			$sqls = array_filter(explode('__', $this->request->post('sql')));
 			$index_search = 1;
 			foreach ($sqls as $sql){

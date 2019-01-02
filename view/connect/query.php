@@ -53,7 +53,7 @@
 </head>
 <body>
 	<div class="searchBtn" style="position:absolute;top:0;left:0;">
-		&nbsp;<button class="webbtn" onmousedown="event.preventDefault();" onclick="excute()">4</button>
+		<button class="webbtn" onmousedown="event.preventDefault();" onclick="excute()" style="margin-left:2px;">4</button>
 	</div>
 	<form name="query" action="index.php?ctrl=connect/result&name=<?php echo $name?>" method="post" target="result_<?php echo $name?>">
 		<textarea class="full_area" style="padding-top:25px;" id="input" spellcheck="false" onkeydown="checkKeys(this, event)" onkeyup="checkKeyword(this)"></textarea>
