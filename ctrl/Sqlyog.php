@@ -18,6 +18,7 @@ class Sqlyog extends Controller{
 	public function new($name){
 		$configs = Tini::readIni($this->config);
 		$newname = $this->unq_name($name, $configs);
+		$configs['default'] = $newname;
 		$configs[$newname] = [
 			'host' => '127.0.0.1',
 			'port' => '3306',
@@ -26,7 +27,6 @@ class Sqlyog extends Controller{
 			'default' => '',
 			'selected' => '1',
 		];
-		$configs['default'] = $newname;
 		$res = Tini::writeIni($this->config, $configs);
 		$this->print_json('1', $res, 'create success');
 	}
